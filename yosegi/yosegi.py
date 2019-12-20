@@ -32,6 +32,10 @@ class Data:
         )
         return labels
 
+    @property
+    def index(self) -> pandas.Index:
+        return self.features.index
+
     def label_map(self, mapping: dict) -> 'Data':
         valid_index = numpy.isin(
             self.labels, list(mapping.keys())
