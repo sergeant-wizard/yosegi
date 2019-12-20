@@ -52,6 +52,10 @@ def test_good_data(data) -> None:
     assert data.label_names.shape == (3,)
     assert data.label_names.dtype == object
 
+    assert isinstance(data.index, pandas.Index)
+    assert (data.index == data.features.index).all()
+    assert (data.index == data.labels.index).all()
+
     assert (data.features.index == data.labels.index).all()
 
 
@@ -109,3 +113,11 @@ def test_reduce_features(data) -> None:
     assert isinstance(data, yosegi.Data)
     assert data.features.shape == (4, 1)
     assert (data.features.columns == ['feature2']).all()
+
+
+def test_split(data) -> None:
+    train0, test0 = data.split(n_splits=2, random_state=0)
+    train1, test1 = data.split(n_splits=2, random_state=1)
+
+    assert set(train0.index.tolist() + test0.index.tolist()) == set(data.index)
+    assert set(train0.index) == set(test1.features.index)
