@@ -18,6 +18,13 @@ class Data:
         self.label_names = numpy.unique(labels)
         self._binarized = False
 
+    def __eq__(self, other) -> bool:
+        return all([
+            (self.features == other.features).all().all(),
+            (self.labels == other.labels).all(),
+            (self.label_names == other.label_names).all(),
+        ])
+
     @property
     def binarized_labels(self) -> pandas.DataFrame:
         label_set = numpy.unique(self.labels)
