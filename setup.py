@@ -8,6 +8,7 @@ setup(
     url='https://github.com/sergeant-wizard/yosegi',
     packages=[
         'yosegi',
+        'yosegi.io',
     ],
     install_requires=[
         'pandas',
