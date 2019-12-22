@@ -12,6 +12,7 @@ setup(
     ],
     install_requires=[
         'pandas',
+        'pyarrow',
         'scikit-learn',
     ],
 )
