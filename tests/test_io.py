@@ -17,10 +17,10 @@ def data() -> yosegi.Data:
     )
 
 
-def test_joblib(data) -> None:
+def test_joblib(data: yosegi.Data) -> None:
     with tempfile.TemporaryFile() as tf:
-        yosegi.io.JoblibIO.save(data, tf)
+        data.save(tf)
         tf.seek(0)
-        loaded = yosegi.io.JoblibIO.load(tf)
+        loaded = yosegi.Data.load(tf)
         assert isinstance(loaded, yosegi.Data)
-        # TODO: assert that the data is unchanged.
+        assert data == loaded

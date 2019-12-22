@@ -5,6 +5,8 @@ import numpy
 import pandas
 import sklearn.model_selection
 
+import yosegi.io
+
 
 class Data:
     def __init__(
@@ -65,21 +67,16 @@ class Data:
     def save(
         self,
         path: pathlib.Path,
-        label: bool,
-        dtype: numpy.dtype
+        fmt: yosegi.io.Formats = yosegi.io.Formats.joblib,
     ) -> None:
-        numpy.savetxt(
-            path / 'features.csv',
-            self.features,
-            delimiter=',',
-        )
-        if label:
-            numpy.savetxt(
-                path / 'labels.csv',
-                self.labels.astype(dtype),
-                delimiter=',',
-                fmt='%s',
-            )
+        fmt.formatter.save(self, path)
+
+    @staticmethod
+    def load(
+        path: pathlib.Path,
+        fmt: yosegi.io.Formats = yosegi.io.Formats.joblib,
+    ) -> 'Data':
+        return fmt.formatter.load(path)
 
     @classmethod
     def merge(
