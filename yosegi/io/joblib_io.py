@@ -11,10 +11,12 @@ class JoblibIO:
         data: 'yosegi.Data',
         path: pathlib.Path,
     ) -> None:
-        joblib.dump(data, path)
+        joblib.dump(data.to_dataframe(), path)
 
     @staticmethod
     def load(
         path: pathlib.Path,
     ) -> 'yosegi.Data':
-        return joblib.load(path)
+        return yosegi.Data.from_dataframe(
+            df=joblib.load(path),
+        )

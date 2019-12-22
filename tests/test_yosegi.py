@@ -43,7 +43,7 @@ def data(features, labels) -> yosegi.Data:
     )
 
 
-def test_good_data(data) -> None:
+def test_good_data(data: yosegi.Data) -> None:
     assert isinstance(data.features, pandas.DataFrame)
     assert data.features.shape == (4, 2)
 
@@ -61,7 +61,7 @@ def test_good_data(data) -> None:
     assert (data.features.index == data.labels.index).all()
 
 
-def test_equals(data) -> None:
+def test_equals(data: yosegi.Data) -> None:
     copied = copy.deepcopy(data)
     assert data == copied
     copied.features.iloc[0, 0] += 1
