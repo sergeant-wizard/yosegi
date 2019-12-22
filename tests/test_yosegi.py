@@ -1,8 +1,10 @@
-import yosegi
+import copy
 
 import numpy
 import pandas
 import pytest
+
+import yosegi
 
 
 @pytest.fixture
@@ -57,6 +59,13 @@ def test_good_data(data) -> None:
     assert (data.index == data.labels.index).all()
 
     assert (data.features.index == data.labels.index).all()
+
+
+def test_equals(data) -> None:
+    copied = copy.deepcopy(data)
+    assert data == copied
+    copied.features.iloc[0, 0] += 1
+    assert not data == copied
 
 
 def test_bad_data(features: pandas.DataFrame, labels: pandas.Series) -> None:
