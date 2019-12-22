@@ -1,1 +1,1 @@
-from .yosegi import Data  # NOQA
+from .data import Data  # NOQA

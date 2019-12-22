@@ -8,7 +8,7 @@ import yosegi
 class JoblibIO:
     @staticmethod
     def save(
-        data: yosegi.Data,
+        data: 'yosegi.Data',
         path: pathlib.Path,
     ) -> None:
         joblib.dump(data, path)
@@ -16,5 +16,5 @@ class JoblibIO:
     @staticmethod
     def load(
         path: pathlib.Path,
-    ) -> yosegi.Data:
+    ) -> 'yosegi.Data':
         return joblib.load(path)
