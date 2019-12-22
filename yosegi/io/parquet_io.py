@@ -12,7 +12,7 @@ class ParquetIO:
         path: pathlib.Path,
     ) -> None:
         data.to_dataframe().to_parquet(
-            path,
+            str(path),
             compression=None,
         )
 

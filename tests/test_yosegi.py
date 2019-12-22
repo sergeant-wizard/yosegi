@@ -57,7 +57,6 @@ def test_good_data(data: yosegi.Data) -> None:
     assert isinstance(data.index, pandas.Index)
     assert (data.index == data.features.index).all()
     assert (data.index == data.labels.index).all()
-
     assert (data.features.index == data.labels.index).all()
 
 

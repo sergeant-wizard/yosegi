@@ -13,7 +13,7 @@ class Data:
         self,
         features: pandas.DataFrame,
         labels: pandas.Series,
-    ) -> 'Data':
+    ) -> None:
         assert (features.index == labels.index).all()
         self.features = features
         self.labels = labels
