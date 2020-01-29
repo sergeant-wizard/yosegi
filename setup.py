@@ -11,9 +11,7 @@ setup(
         'yosegi.io',
     ],
     install_requires=[
-        'numpy',
         'pandas',
-        'pyarrow',
         'scikit-learn',
     ],
 )
