@@ -12,7 +12,7 @@ def sample_index() -> pandas.Index:
     yield pandas.Index([
         'sample1',
         'sample2',
-        'sample3',
+        'sample2',  # intentionally duplicate
         'sample4',
     ])
 
@@ -129,3 +129,10 @@ def test_split(data) -> None:
 
     assert set(train0.index.tolist() + test0.index.tolist()) == set(data.index)
     assert set(train0.index) == set(test1.features.index)
+
+
+def test_to_dataframe(data) -> None:
+    df = data.to_dataframe()
+    original_shape = data.features.shape
+    assert df.shape == (original_shape[0], original_shape[1] + 1)
+    assert (df.columns == ['feature1', 'feature2', 'labels']).all()
