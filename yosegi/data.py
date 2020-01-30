@@ -28,9 +28,9 @@ class Data:
 
     def to_dataframe(self) -> pandas.DataFrame:
         assert 'labels' not in self.features.columns
-        labels = self.labels.copy()
-        labels.name = 'labels'
-        return self.features.join(labels)
+        ret = self.features.copy()
+        ret['labels'] = self.labels
+        return ret
 
     def __eq__(self, other) -> bool:
         return all([
