@@ -61,12 +61,14 @@ class Data:
         valid_index = numpy.isin(
             self.labels, list(mapping.keys())
         )
-        self.labels = self.labels[valid_index]
-        self.labels = self.labels.apply(mapping.get)
-        self.label_names = numpy.unique(self.labels)
-        self.features = self.features[valid_index]
+        labels = self.labels[valid_index]
+        labels = labels.apply(mapping.get)
+        features = self.features[valid_index]
 
-        return self
+        return Data(
+            features=features,
+            labels=labels,
+        )
 
     def reduce_features(
         self,
