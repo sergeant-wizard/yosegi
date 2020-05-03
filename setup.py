@@ -10,8 +10,4 @@ setup(
         'yosegi',
         'yosegi.io',
     ],
-    install_requires=[
-        'pandas',
-        'scikit-learn',
-    ],
 )
