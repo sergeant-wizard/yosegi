@@ -108,13 +108,12 @@ class Data:
     def split(
         self,
         random_state: int,
+        fold: int,
         n_splits: int,
     ) -> typing.Tuple['Data', 'Data']:
-        seed = random_state // n_splits
-        fold = random_state % n_splits
         skf = sklearn.model_selection.StratifiedKFold(
             n_splits=n_splits,
-            random_state=seed,
+            random_state=random_state,
             shuffle=True,
         )
         if self.labels.ndim == 1:
