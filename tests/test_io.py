@@ -1,3 +1,4 @@
+import pathlib
 import tempfile
 
 import pandas
@@ -15,7 +16,7 @@ formatters = [
 @pytest.fixture
 def data() -> yosegi.Data:
     index = ['s1', 's2', 's2']  # intentionally duplicate
-    yield yosegi.Data(
+    return yosegi.Data(
         features=pandas.DataFrame({
             'a': [0, 1, 2],
             'b': [10, 11, 12],
@@ -30,8 +31,9 @@ def data() -> yosegi.Data:
 def test_io(data: yosegi.Data) -> None:
     for fmt in yosegi.io.Formats:
         with tempfile.NamedTemporaryFile() as tf:
-            data.save(tf.name, fmt=fmt)
+            path = pathlib.Path(tf.name)
+            data.save(path, fmt=fmt)
             tf.seek(0)
-            loaded = yosegi.Data.load(tf, fmt=fmt)
+            loaded = yosegi.Data.load(path, fmt=fmt)
             assert isinstance(loaded, yosegi.Data)
             assert data == loaded
