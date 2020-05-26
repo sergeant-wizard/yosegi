@@ -6,6 +6,28 @@ import pandas
 import sklearn.model_selection
 
 import yosegi.io
+from yosegi.fold import Fold
+
+
+def _create_fold(
+    random_state: int,
+    n_splits: int,
+    fold_idx: typing.Optional[int] = None,
+) -> Fold:
+    """
+    support older versions of Data.split method
+    """
+    if fold_idx is None:
+        return Fold.from_flat_index(
+            idx=random_state,
+            n_splits=n_splits,
+        )
+    else:
+        return Fold(
+            fold_idx=fold_idx,
+            random_state=random_state,
+            n_splits=n_splits,
+        )
 
 
 class Data:
@@ -108,19 +130,22 @@ class Data:
     def split(
         self,
         random_state: int,
-        fold: int,
         n_splits: int,
+        fold_idx: typing.Optional[int] = None,
     ) -> typing.Tuple['Data', 'Data']:
+        fold = _create_fold(random_state, n_splits, fold_idx)
         skf = sklearn.model_selection.StratifiedKFold(
-            n_splits=n_splits,
-            random_state=random_state,
+            n_splits=fold.n_splits,
+            random_state=fold.random_state,
             shuffle=True,
         )
         if self.labels.ndim == 1:
             labels = self.labels
         else:
             labels = numpy.argmax(self.labels.values, axis=1)
-        train_index, test_index = list(skf.split(self.features, labels))[fold]
+        train_index, test_index = list(
+            skf.split(self.features, labels)
+        )[fold.fold_idx]
         return (
             Data(
                 features=self.features.iloc[train_index],

@@ -5,6 +5,8 @@ import pandas
 import pytest
 
 import yosegi
+import yosegi.data
+import yosegi.fold
 
 
 @pytest.fixture
@@ -133,10 +135,35 @@ def test_reduce_features(data: yosegi.Data) -> None:
     assert (data.features.columns == ['feature2']).all()
 
 
+def test_create_fold(data: yosegi.Data) -> None:
+    # older version of the API
+    assert (
+        yosegi.data._create_fold(0, 4) ==
+        yosegi.fold.Fold(0, 4, 0)
+    )
+    assert (
+        yosegi.data._create_fold(2, 4) ==
+        yosegi.fold.Fold(0, 4, 2)
+    )
+    assert (
+        yosegi.data._create_fold(4, 4) ==
+        yosegi.fold.Fold(1, 4, 0)
+    )
+    assert (
+        yosegi.data._create_fold(6, 4) ==
+        yosegi.fold.Fold(1, 4, 2)
+    )
+    # fold_idx is recommended as it adds structure
+    assert (
+        yosegi.data._create_fold(6, 4, 2) ==
+        yosegi.fold.Fold(6, 4, 2)
+    )
+
+
 def test_split(data: yosegi.Data) -> None:
-    train0, test0 = data.split(n_splits=2, fold=0, random_state=0)
-    train1, test1 = data.split(n_splits=2, fold=1, random_state=0)
-    train2, test2 = data.split(n_splits=2, fold=0, random_state=1)
+    train0, test0 = data.split(n_splits=2, fold_idx=0, random_state=0)
+    train1, test1 = data.split(n_splits=2, fold_idx=1, random_state=0)
+    train2, test2 = data.split(n_splits=2, fold_idx=0, random_state=1)
 
     assert set(train0.index.tolist() + test0.index.tolist()) == set(data.index)
     assert set(train0.index) == set(test1.index)
