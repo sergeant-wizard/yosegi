@@ -58,6 +58,9 @@ class Data:
         return self.features.index
 
     def label_map(self, mapping: dict) -> 'Data':
+        if not set(mapping.keys()).issubset(self.labels.unique()):
+            raise ValueError('At least one key was missing in labels')
+
         valid_index = numpy.isin(
             self.labels, list(mapping.keys())
         )

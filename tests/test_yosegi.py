@@ -29,7 +29,7 @@ def features(sample_index) -> pandas.DataFrame:
 
 @pytest.fixture
 def labels(sample_index) -> pandas.Series:
-    yield pandas.Series(
+    return pandas.Series(
         ['Good', 'Bad', 'Good', 'Dunno'],
         index=sample_index,
     )
@@ -37,7 +37,7 @@ def labels(sample_index) -> pandas.Series:
 
 @pytest.fixture
 def data(features, labels) -> yosegi.Data:
-    yield yosegi.Data(
+    return yosegi.Data(
         features=features,
         labels=labels,
     )
@@ -110,6 +110,16 @@ def test_label_map_without_reduction(data) -> None:
     assert data.features.shape == features_shape
     assert data.labels.shape == labels_shape
     assert (data.label_names == ['Better', 'Unknown', 'Worse']).all()
+
+
+def test_label_map_with_error(data) -> None:
+    data.label_map({
+        'Dunno': 'Good',
+    })
+    with pytest.raises(ValueError):
+        data.label_map({
+            'Unknown': 'Good',
+        })
 
 
 def test_reduce_features(data) -> None:
