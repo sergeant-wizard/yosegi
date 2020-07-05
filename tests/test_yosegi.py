@@ -50,44 +50,55 @@ def data(features, labels) -> yosegi.Data:
 @contextlib.contextmanager
 def check_immutable(data: yosegi.Data) -> Iterator[None]:
     copied = copy.deepcopy(data)
-    feature_id = id(data.features)
-    labels_id = id(data.labels)
-    label_names_id = id(data.label_names)
+    feature_id = id(data._features)
+    labels_id = id(data._labels)
+    label_names_id = id(data._label_names)
     yield
-    assert feature_id == id(data.features)
-    assert labels_id == id(data.labels)
-    assert label_names_id == id(data.label_names)
+    assert feature_id == id(data._features)
+    assert labels_id == id(data._labels)
+    assert label_names_id == id(data._label_names)
     assert copied == data
 
 
 def check_new_instance(before: yosegi.Data, after: yosegi.Data):
     assert id(before) != id(after)
-    assert id(before.features) != id(after.features)
-    assert id(before.labels) != id(after.labels)
-    assert id(before.label_names) != id(after.label_names)
+    assert id(before._features) != id(after._features)
+    assert id(before._labels) != id(after._labels)
+    assert id(before._label_names) != id(after._label_names)
 
 
 def test_good_data(data: yosegi.Data) -> None:
-    assert isinstance(data.features, pandas.DataFrame)
-    assert data.features.shape == (4, 2)
+    assert isinstance(data._features, pandas.DataFrame)
+    assert data._features.shape == (4, 2)
 
-    assert isinstance(data.labels, pandas.Series)
-    assert data.labels.shape == (4,)
+    assert isinstance(data._labels, pandas.Series)
+    assert data._labels.shape == (4,)
 
-    assert isinstance(data.label_names, numpy.ndarray)
-    assert data.label_names.shape == (3,)
-    assert data.label_names.dtype == object
+    assert isinstance(data._label_names, numpy.ndarray)
+    assert data._label_names.shape == (3,)
+    assert data._label_names.dtype == object
 
     assert isinstance(data.index, pandas.Index)
-    assert (data.index == data.features.index).all()
-    assert (data.index == data.labels.index).all()
-    assert (data.features.index == data.labels.index).all()
+    assert (data.index == data._features.index).all()
+    assert (data.index == data._labels.index).all()
+    assert (data._features.index == data._labels.index).all()
+
+
+def test_properties(data: yosegi.Data) -> None:
+    assert id(data.features) != id(data._features)
+    assert id(data.labels) != id(data._labels)
+    assert id(data.label_names) != id(data._label_names)
+
+    with check_immutable(data):
+        # This is counter-intuitive,
+        # but is necessary to keep yosegi.Data immutable
+        data.features.iloc[0, 0] += 1
 
 
 def test_equals(data: yosegi.Data) -> None:
     copied = copy.deepcopy(data)
     assert data == copied
-    copied.features.iloc[0, 0] += 1
+    copied._features.iloc[0, 0] += 1
     assert not data == copied
 
 
@@ -104,14 +115,14 @@ def test_binarize(data: yosegi.Data) -> None:
         binarized_labels = data.binarized_labels
     assert isinstance(binarized_labels, pandas.DataFrame)
     assert binarized_labels.shape == (
-        data.features.shape[0], data.label_names.shape[0])
+        data._features.shape[0], data._label_names.shape[0])
     assert (binarized_labels.dtypes == numpy.int).all()
-    assert (binarized_labels.columns == data.label_names).all()
-    assert (binarized_labels.index == data.features.index).all()
+    assert (binarized_labels.columns == data._label_names).all()
+    assert (binarized_labels.index == data._features.index).all()
 
 
 def test_label_map_with_reduction(data: yosegi.Data) -> None:
-    features_shape = data.features.shape
+    features_shape = data._features.shape
 
     with check_immutable(data):
         reduced = data.label_map({
@@ -120,14 +131,14 @@ def test_label_map_with_reduction(data: yosegi.Data) -> None:
     check_new_instance(data, reduced)
     assert id(reduced) != id(data)
     assert isinstance(reduced, yosegi.Data)
-    assert reduced.features.shape == (2, features_shape[1])
-    assert reduced.labels.shape == (2,)
-    assert (reduced.label_names == ['Better']).all()
+    assert reduced._features.shape == (2, features_shape[1])
+    assert reduced._labels.shape == (2,)
+    assert (reduced._label_names == ['Better']).all()
 
 
 def test_label_map_without_reduction(data: yosegi.Data) -> None:
-    features_shape = data.features.shape
-    labels_shape = data.labels.shape
+    features_shape = data._features.shape
+    labels_shape = data._labels.shape
 
     with check_immutable(data):
         mapped = data.label_map({
@@ -138,9 +149,9 @@ def test_label_map_without_reduction(data: yosegi.Data) -> None:
     check_new_instance(data, mapped)
     assert id(mapped) != id(data)
     assert isinstance(mapped, yosegi.Data)
-    assert mapped.features.shape == features_shape
-    assert mapped.labels.shape == labels_shape
-    assert (mapped.label_names == ['Better', 'Unknown', 'Worse']).all()
+    assert mapped._features.shape == features_shape
+    assert mapped._labels.shape == labels_shape
+    assert (mapped._label_names == ['Better', 'Unknown', 'Worse']).all()
 
 
 def test_label_map_with_error(data: yosegi.Data) -> None:
@@ -159,14 +170,14 @@ def test_reduce_features(data: yosegi.Data) -> None:
         reduced = data.reduce_features(None)
     check_new_instance(data, reduced)
     assert isinstance(reduced, yosegi.Data)
-    assert reduced.features.shape == (4, 2)
+    assert reduced._features.shape == (4, 2)
 
     with check_immutable(data):
         reduced = data.reduce_features(['feature2'])
     check_new_instance(data, reduced)
     assert isinstance(reduced, yosegi.Data)
-    assert reduced.features.shape == (4, 1)
-    assert (reduced.features.columns == ['feature2']).all()
+    assert reduced._features.shape == (4, 1)
+    assert (reduced._features.columns == ['feature2']).all()
 
 
 def test_create_fold(data: yosegi.Data) -> None:
@@ -211,6 +222,6 @@ def test_split(data: yosegi.Data) -> None:
 def test_to_dataframe(data: yosegi.Data) -> None:
     with check_immutable(data):
         df = data.to_dataframe()
-    original_shape = data.features.shape
+    original_shape = data._features.shape
     assert df.shape == (original_shape[0], original_shape[1] + 1)
     assert (df.columns == ['feature1', 'feature2', 'labels']).all()

@@ -37,9 +37,21 @@ class Data:
         labels: pandas.Series,
     ) -> None:
         assert (features.index == labels.index).all()
-        self.features = features
-        self.labels = labels
-        self.label_names = numpy.unique(self.labels)
+        self._features = features
+        self._labels = labels
+        self._label_names = numpy.unique(self._labels)
+
+    @property
+    def features(self) -> pandas.DataFrame:
+        return self._features.copy()
+
+    @property
+    def labels(self) -> pandas.Series:
+        return self._labels.copy()
+
+    @property
+    def label_names(self) -> numpy.ndarray:
+        return self._label_names.copy()
 
     @classmethod
     def from_dataframe(cls, df: pandas.DataFrame) -> 'Data':
@@ -49,46 +61,49 @@ class Data:
         )
 
     def to_dataframe(self) -> pandas.DataFrame:
-        assert 'labels' not in self.features.columns
-        ret = self.features.copy()
-        ret['labels'] = self.labels
+        assert 'labels' not in self._features.columns
+        ret = self._features.copy()
+        ret['labels'] = self._labels
         return ret
 
-    def __eq__(self, other) -> bool:
-        return all([
-            (self.features == other.features).all().all(),
-            (self.labels == other.labels).all(),
-            (self.label_names == other.label_names).all(),
-        ])
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, yosegi.Data):
+            return all([
+                (self._features == other._features).all().all(),
+                (self._labels == other._labels).all(),
+                (self._label_names == other._label_names).all(),
+            ])
+        else:
+            raise NotImplementedError
 
     @property
     def binarized_labels(self) -> pandas.DataFrame:
-        label_set = numpy.unique(self.labels)
+        label_set = numpy.unique(self._labels)
         labels = sklearn.preprocessing.label_binarize(
-            self.labels,
+            self._labels,
             label_set,
         )
         labels = pandas.DataFrame(
             labels,
-            index=self.features.index,
+            index=self._features.index,
             columns=label_set,
         )
         return labels
 
     @property
     def index(self) -> pandas.Index:
-        return self.features.index
+        return self._features.index
 
     def label_map(self, mapping: dict) -> 'Data':
-        if not set(mapping.keys()).issubset(self.labels.unique()):
+        if not set(mapping.keys()).issubset(self._labels.unique()):
             raise ValueError('At least one key was missing in labels')
 
         valid_index = numpy.isin(
-            self.labels, list(mapping.keys())
+            self._labels, list(mapping.keys())
         )
-        labels = self.labels[valid_index]
+        labels = self._labels[valid_index]
         labels = labels.apply(mapping.get)
-        features = self.features[valid_index]
+        features = self._features[valid_index]
 
         return Data(
             features=features,
@@ -100,12 +115,12 @@ class Data:
         feature_idx: typing.Optional[numpy.array],
     ) -> 'Data':
         if feature_idx is None:
-            features = self.features.copy()
+            features = self._features.copy()
         else:
-            features = self.features[feature_idx]
+            features = self._features[feature_idx]
         return Data(
             features=features,
-            labels=self.labels.copy(),
+            labels=self._labels.copy(),
         )
 
     def save(
@@ -128,8 +143,8 @@ class Data:
         *datas: 'Data',
     ) -> 'Data':
         return Data(
-            features=pandas.concat([data.features for data in datas]),
-            labels=pandas.concat([data.labels for data in datas]),
+            features=pandas.concat([data._features for data in datas]),
+            labels=pandas.concat([data._labels for data in datas]),
         )
 
     def split(
@@ -144,20 +159,20 @@ class Data:
             random_state=fold.random_state,
             shuffle=True,
         )
-        if self.labels.ndim == 1:
-            labels = self.labels
+        if self._labels.ndim == 1:
+            labels = self._labels
         else:
-            labels = numpy.argmax(self.labels.values, axis=1)
+            labels = numpy.argmax(self._labels.values, axis=1)
         train_index, test_index = list(
-            skf.split(self.features, labels)
+            skf.split(self._features, labels)
         )[fold.fold_idx]
         return (
             Data(
-                features=self.features.iloc[train_index],
-                labels=self.labels.iloc[train_index],
+                features=self._features.iloc[train_index],
+                labels=self._labels.iloc[train_index],
             ),
             Data(
-                features=self.features.iloc[test_index],
-                labels=self.labels.iloc[test_index],
+                features=self._features.iloc[test_index],
+                labels=self._labels.iloc[test_index],
             ),
         )
