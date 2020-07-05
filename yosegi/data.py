@@ -99,9 +99,14 @@ class Data:
         self,
         feature_idx: typing.Optional[numpy.array],
     ) -> 'Data':
-        if feature_idx is not None:
-            self.features = self.features[feature_idx]
-        return self
+        if feature_idx is None:
+            features = self.features.copy()
+        else:
+            features = self.features[feature_idx]
+        return Data(
+            features=features,
+            labels=self.labels.copy(),
+        )
 
     def save(
         self,
