@@ -81,7 +81,7 @@ class Data:
 
     def label_map(
         self,
-        mapping: typing.Dict[str, typing.Union[str, int]],
+        mapping: typing.Mapping[str, typing.Union[str, int]],
     ) -> 'Data':
         if not set(mapping.keys()).issubset(self.labels.unique()):
             raise ValueError('At least one key was missing in labels')
