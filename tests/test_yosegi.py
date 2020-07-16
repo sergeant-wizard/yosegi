@@ -13,25 +13,25 @@ import yosegi.fold
 
 @pytest.fixture
 def sample_index() -> pandas.Index:
-    yield pandas.Index(
+    return pandas.Index(
         ["sample1", "sample2", "sample2", "sample4"]  # intentionally duplicate
     )
 
 
 @pytest.fixture
-def features(sample_index) -> pandas.DataFrame:
-    yield pandas.DataFrame(
+def features(sample_index: pandas.Index) -> pandas.DataFrame:
+    return pandas.DataFrame(
         {"feature1": [0, 1, 2, 10], "feature2": [3, 4, 5, 20]}, index=sample_index,
     )
 
 
 @pytest.fixture
-def labels(sample_index) -> pandas.Series:
+def labels(sample_index: pandas.Index) -> pandas.Series:
     return pandas.Series(["Good", "Bad", "Good", "Dunno"], index=sample_index)
 
 
 @pytest.fixture
-def data(features, labels) -> yosegi.Data:
+def data(features: pandas.DataFrame, labels: pandas.Series) -> yosegi.Data:
     return yosegi.Data(features=features, labels=labels)
 
 
@@ -48,7 +48,7 @@ def check_immutable(data: yosegi.Data) -> Iterator[None]:
     assert copied == data
 
 
-def check_new_instance(before: yosegi.Data, after: yosegi.Data):
+def check_new_instance(before: yosegi.Data, after: yosegi.Data) -> None:
     assert id(before) != id(after)
     assert id(before.features) != id(after.features)
     assert id(before.labels) != id(after.labels)
