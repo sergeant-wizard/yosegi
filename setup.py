@@ -10,4 +10,7 @@ setup(
         'yosegi',
         'yosegi.io',
     ],
+    package_data={
+        'yosegi': ['py.typed'],
+    },
 )
