@@ -13,38 +13,26 @@ import yosegi.fold
 
 @pytest.fixture
 def sample_index() -> pandas.Index:
-    yield pandas.Index([
-        'sample1',
-        'sample2',
-        'sample2',  # intentionally duplicate
-        'sample4',
-    ])
-
-
-@pytest.fixture
-def features(sample_index) -> pandas.DataFrame:
-    yield pandas.DataFrame({
-        'feature1': [0, 1, 2, 10],
-        'feature2': [3, 4, 5, 20],
-    },
-        index=sample_index,
+    return pandas.Index(
+        ["sample1", "sample2", "sample2", "sample4"]  # intentionally duplicate
     )
 
 
 @pytest.fixture
-def labels(sample_index) -> pandas.Series:
-    return pandas.Series(
-        ['Good', 'Bad', 'Good', 'Dunno'],
-        index=sample_index,
+def features(sample_index: pandas.Index) -> pandas.DataFrame:
+    return pandas.DataFrame(
+        {"feature1": [0, 1, 2, 10], "feature2": [3, 4, 5, 20]}, index=sample_index,
     )
 
 
 @pytest.fixture
-def data(features, labels) -> yosegi.Data:
-    return yosegi.Data(
-        features=features,
-        labels=labels,
-    )
+def labels(sample_index: pandas.Index) -> pandas.Series:
+    return pandas.Series(["Good", "Bad", "Good", "Dunno"], index=sample_index)
+
+
+@pytest.fixture
+def data(features: pandas.DataFrame, labels: pandas.Series) -> yosegi.Data:
+    return yosegi.Data(features=features, labels=labels)
 
 
 @contextlib.contextmanager
@@ -60,7 +48,7 @@ def check_immutable(data: yosegi.Data) -> Iterator[None]:
     assert copied == data
 
 
-def check_new_instance(before: yosegi.Data, after: yosegi.Data):
+def check_new_instance(before: yosegi.Data, after: yosegi.Data) -> None:
     assert id(before) != id(after)
     assert id(before.features) != id(after.features)
     assert id(before.labels) != id(after.labels)
@@ -94,8 +82,7 @@ def test_equals(data: yosegi.Data) -> None:
 def test_bad_data(features: pandas.DataFrame, labels: pandas.Series) -> None:
     with pytest.raises(AssertionError):
         yosegi.Data(
-            features=features,
-            labels=labels.reset_index(drop=True),
+            features=features, labels=labels.reset_index(drop=True),
         )
 
 
@@ -103,8 +90,7 @@ def test_binarize(data: yosegi.Data) -> None:
     with check_immutable(data):
         binarized_labels = data.binarized_labels
     assert isinstance(binarized_labels, pandas.DataFrame)
-    assert binarized_labels.shape == (
-        data.features.shape[0], data.label_names.shape[0])
+    assert binarized_labels.shape == (data.features.shape[0], data.label_names.shape[0])
     assert (binarized_labels.dtypes == numpy.int).all()
     assert (binarized_labels.columns == data.label_names).all()
     assert (binarized_labels.index == data.features.index).all()
@@ -114,15 +100,13 @@ def test_label_map_with_reduction(data: yosegi.Data) -> None:
     features_shape = data.features.shape
 
     with check_immutable(data):
-        reduced = data.label_map({
-            'Good': 'Better',
-        })
+        reduced = data.label_map({"Good": "Better"})
     check_new_instance(data, reduced)
     assert id(reduced) != id(data)
     assert isinstance(reduced, yosegi.Data)
     assert reduced.features.shape == (2, features_shape[1])
     assert reduced.labels.shape == (2,)
-    assert (reduced.label_names == ['Better']).all()
+    assert (reduced.label_names == ["Better"]).all()
 
 
 def test_label_map_without_reduction(data: yosegi.Data) -> None:
@@ -130,28 +114,20 @@ def test_label_map_without_reduction(data: yosegi.Data) -> None:
     labels_shape = data.labels.shape
 
     with check_immutable(data):
-        mapped = data.label_map({
-            'Good': 'Better',
-            'Bad': 'Worse',
-            'Dunno': 'Unknown',
-        })
+        mapped = data.label_map({"Good": "Better", "Bad": "Worse", "Dunno": "Unknown"})
     check_new_instance(data, mapped)
     assert id(mapped) != id(data)
     assert isinstance(mapped, yosegi.Data)
     assert mapped.features.shape == features_shape
     assert mapped.labels.shape == labels_shape
-    assert (mapped.label_names == ['Better', 'Unknown', 'Worse']).all()
+    assert (mapped.label_names == ["Better", "Unknown", "Worse"]).all()
 
 
 def test_label_map_with_error(data: yosegi.Data) -> None:
     with check_immutable(data):
-        data.label_map({
-            'Dunno': 'Good',
-        })
+        data.label_map({"Dunno": "Good"})
     with pytest.raises(ValueError):
-        data.label_map({
-            'Unknown': 'Good',
-        })
+        data.label_map({"Unknown": "Good"})
 
 
 def test_reduce_features(data: yosegi.Data) -> None:
@@ -162,36 +138,21 @@ def test_reduce_features(data: yosegi.Data) -> None:
     assert reduced.features.shape == (4, 2)
 
     with check_immutable(data):
-        reduced = data.reduce_features(['feature2'])
+        reduced = data.reduce_features(["feature2"])
     check_new_instance(data, reduced)
     assert isinstance(reduced, yosegi.Data)
     assert reduced.features.shape == (4, 1)
-    assert (reduced.features.columns == ['feature2']).all()
+    assert (reduced.features.columns == ["feature2"]).all()
 
 
 def test_create_fold(data: yosegi.Data) -> None:
     # older version of the API
-    assert (
-        yosegi.data._create_fold(0, 4) ==
-        yosegi.fold.Fold(0, 4, 0)
-    )
-    assert (
-        yosegi.data._create_fold(2, 4) ==
-        yosegi.fold.Fold(0, 4, 2)
-    )
-    assert (
-        yosegi.data._create_fold(4, 4) ==
-        yosegi.fold.Fold(1, 4, 0)
-    )
-    assert (
-        yosegi.data._create_fold(6, 4) ==
-        yosegi.fold.Fold(1, 4, 2)
-    )
+    assert yosegi.data._create_fold(0, 4) == yosegi.fold.Fold(0, 4, 0)
+    assert yosegi.data._create_fold(2, 4) == yosegi.fold.Fold(0, 4, 2)
+    assert yosegi.data._create_fold(4, 4) == yosegi.fold.Fold(1, 4, 0)
+    assert yosegi.data._create_fold(6, 4) == yosegi.fold.Fold(1, 4, 2)
     # fold_idx is recommended as it adds structure
-    assert (
-        yosegi.data._create_fold(6, 4, 2) ==
-        yosegi.fold.Fold(6, 4, 2)
-    )
+    assert yosegi.data._create_fold(6, 4, 2) == yosegi.fold.Fold(6, 4, 2)
 
 
 def test_split(data: yosegi.Data) -> None:
@@ -213,4 +174,4 @@ def test_to_dataframe(data: yosegi.Data) -> None:
         df = data.to_dataframe()
     original_shape = data.features.shape
     assert df.shape == (original_shape[0], original_shape[1] + 1)
-    assert (df.columns == ['feature1', 'feature2', 'labels']).all()
+    assert (df.columns == ["feature1", "feature2", "labels"]).all()

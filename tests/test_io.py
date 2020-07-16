@@ -15,16 +15,10 @@ formatters = [
 
 @pytest.fixture
 def data() -> yosegi.Data:
-    index = ['s1', 's2', 's2']  # intentionally duplicate
+    index = ["s1", "s2", "s2"]  # intentionally duplicate
     return yosegi.Data(
-        features=pandas.DataFrame({
-            'a': [0, 1, 2],
-            'b': [10, 11, 12],
-        }, index=index),
-        labels=pandas.Series(
-            [2, 3, 4],
-            index=index,
-        ),
+        features=pandas.DataFrame({"a": [0, 1, 2], "b": [10, 11, 12]}, index=index),
+        labels=pandas.Series([2, 3, 4], index=index),
     )
 
 
