@@ -5,12 +5,12 @@ import yosegi
 
 
 class Formatter(ABC):
-    @abstractstaticmethod
     @staticmethod
+    @abstractstaticmethod
     def save(data: "yosegi.Data", path: pathlib.Path) -> None:
         ...
 
-    @abstractstaticmethod
     @staticmethod
+    @abstractstaticmethod
     def load(path: pathlib.Path) -> "yosegi.Data":
         ...
