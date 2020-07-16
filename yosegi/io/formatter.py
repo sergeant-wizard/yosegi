@@ -1,16 +1,16 @@
 import pathlib
 from abc import ABC, abstractstaticmethod
 
-from ..data import Data
+import yosegi
 
 
 class Formatter(ABC):
     @abstractstaticmethod
     @staticmethod
-    def save(data: Data, path: pathlib.Path) -> None:
+    def save(data: "yosegi.Data", path: pathlib.Path) -> None:
         ...
 
     @abstractstaticmethod
     @staticmethod
-    def load(path: pathlib.Path) -> Data:
+    def load(path: pathlib.Path) -> "yosegi.Data":
         ...
